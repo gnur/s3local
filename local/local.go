@@ -1,6 +1,8 @@
 package local
 
 import (
+	"bytes"
+	"io"
 	"io/ioutil"
 	"os"
 	"path"
@@ -49,7 +51,7 @@ func (s Store) List(prefix, suffix string) ([]string, error) {
 }
 
 // Write writes the contents of content to key
-func (s Store) Write(key string, content []byte) error {
+func (s Store) Write(key string, content io.Reader) error {
 	writePath := path.Join(s.Path, key)
 	parentDir := path.Dir(writePath)
 	log.WithField("parentDir", parentDir).Debug("checking parent dir")
@@ -63,7 +65,16 @@ func (s Store) Write(key string, content []byte) error {
 		}
 	}
 	log.Debug("Writing file")
-	return ioutil.WriteFile(writePath, content, 0644)
+	f, err := os.Create(writePath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(content)
+
+	_, err = f.Write(buf.Bytes())
+	return err
 }
 
 // New returns a new local store implementing the s3local interface

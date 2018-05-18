@@ -3,6 +3,7 @@ package s3local
 import (
 	"errors"
 	"fmt"
+	"io"
 
 	"github.com/gnur/s3local/local"
 	"github.com/gnur/s3local/s3"
@@ -30,7 +31,7 @@ type (
 		List(prefix, suffix string) ([]string, error)
 
 		// Write writes the contents of content to key
-		Write(key string, content []byte) error
+		Write(key string, content io.Reader) error
 	}
 
 	// Config holds the configuration needed for a s3local storage

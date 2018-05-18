@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/minio/minio-go"
@@ -56,9 +57,8 @@ func (s Store) List(prefix, suffix string) ([]string, error) {
 }
 
 // Write writes the contents of content to key
-func (s Store) Write(key string, content []byte) error {
-	b := bytes.NewBuffer(content)
-	_, err := s.Client.PutObject(s.Bucket, key, b, -1, minio.PutObjectOptions{})
+func (s Store) Write(key string, content io.Reader) error {
+	_, err := s.Client.PutObject(s.Bucket, key, content, -1, minio.PutObjectOptions{})
 	return err
 }
 
