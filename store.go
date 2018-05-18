@@ -19,7 +19,7 @@ var (
 
 type (
 	// S3Local interface to define the Storage abstracting
-	S3Local interface {
+	Store interface {
 		// Type returns the Store Type [s3, local]
 		Type() string
 
@@ -42,7 +42,7 @@ type (
 )
 
 // New returns a new store
-func New(conf Config) (S3Local, error) {
+func New(conf Config) (Store, error) {
 	if conf.Type == "s3" {
 		fmt.Println("s3")
 		s, err := s3.New(conf.Settings)
