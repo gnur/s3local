@@ -1,10 +1,13 @@
 package local
 
 import (
+	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Store stores the config needed for a local store
@@ -19,11 +22,11 @@ func (s Store) Type() string {
 
 // Read returns the contents of an object at key
 func (s Store) Read(key string) ([]byte, error) {
-	return []byte{}, nil
+	return ioutil.ReadFile(path.Join(s.Path, key))
 }
 
 // List all objects with the prefix given
-func (s Store) List(prefix string) ([]string, error) {
+func (s Store) List(prefix, suffix string) ([]string, error) {
 	var files []string
 	walkPath := s.Path
 	testprefix := path.Join(s.Path, prefix)
@@ -33,7 +36,7 @@ func (s Store) List(prefix string) ([]string, error) {
 	}
 
 	err = filepath.Walk(walkPath, func(path string, info os.FileInfo, err error) error {
-		if !info.IsDir() && strings.HasPrefix(path, testprefix) {
+		if !info.IsDir() && strings.HasPrefix(path, testprefix) && strings.HasSuffix(path, suffix) {
 			files = append(files, path)
 		}
 		return nil
@@ -47,9 +50,23 @@ func (s Store) List(prefix string) ([]string, error) {
 
 // Write writes the contents of content to key
 func (s Store) Write(key string, content []byte) error {
-	return nil
+	writePath := path.Join(s.Path, key)
+	parentDir := path.Dir(writePath)
+	log.WithField("parentDir", parentDir).Debug("checking parent dir")
+	_, err := os.Stat(parentDir)
+	log.WithField("err", err).Debug("os.stat")
+	if err != nil {
+		err = os.MkdirAll(parentDir, 0755)
+		log.WithField("err", err).Debug("mkdirall")
+		if err != nil {
+			return err
+		}
+	}
+	log.Debug("Writing file")
+	return ioutil.WriteFile(writePath, content, 0644)
 }
 
+// New returns a new local store implementing the s3local interface
 func New(settings map[string]string) (Store, error) {
 	return Store{
 		Path: settings["path"],

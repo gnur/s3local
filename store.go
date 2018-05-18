@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gnur/s3local/local"
+	"github.com/gnur/s3local/s3"
 )
 
 var (
@@ -26,7 +27,7 @@ type (
 		Read(key string) ([]byte, error)
 
 		// List all objects with the prefix given
-		List(prefix string) ([]string, error)
+		List(prefix, suffix string) ([]string, error)
 
 		// Write writes the contents of content to key
 		Write(key string, content []byte) error
@@ -44,7 +45,9 @@ type (
 func New(conf Config) (S3Local, error) {
 	if conf.Type == "s3" {
 		fmt.Println("s3")
-		return nil, errors.New("not yet implemented")
+		s, err := s3.New(conf.Settings)
+		fmt.Println(s, err)
+		return s, err
 	} else if conf.Type == "local" {
 		fmt.Println("local")
 		s, _ := local.New(conf.Settings)
