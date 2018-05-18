@@ -45,12 +45,10 @@ type (
 // New returns a new store
 func New(conf Config) (Store, error) {
 	if conf.Type == "s3" {
-		fmt.Println("s3")
 		s, err := s3.New(conf.Settings)
 		fmt.Println(s, err)
 		return s, err
 	} else if conf.Type == "local" {
-		fmt.Println("local")
 		s, _ := local.New(conf.Settings)
 		return s, nil
 	} else {
