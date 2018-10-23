@@ -29,7 +29,10 @@ func (s Store) Read(key string) ([]byte, error) {
 		return []byte{}, err
 	}
 	buf := new(bytes.Buffer)
-	buf.ReadFrom(object)
+	_, err = buf.ReadFrom(object)
+	if err != nil {
+		return []byte{}, err
+	}
 	return buf.Bytes(), nil
 
 }
